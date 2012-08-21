@@ -31,24 +31,25 @@ type ``Decision Trees tests`` () =
     member this.``Classify should match subject with tree`` () =
         let tree =
             Choice("First", 
-                [| "Head", Choice("Second", 
-                    [| "Head", Conclusion("Win"); 
-                       "Tail", Conclusion("Lose") |]); 
-                    "Tail", Conclusion("Lose") |])
+                Map [ "Head", 
+                            Choice("Second", 
+                                Map [ "Head", Conclusion("Win"); 
+                                       "Tail", Conclusion("Lose")]); 
+                       "Tail", Conclusion("Lose") ])
 
-        let subject = [("First", "Head"); ("Second", "Head")]
+        let subject = Map [("First", "Head"); ("Second", "Head")]
         let expected = "Win"
         let actual = classify subject tree
 
         actual |> should equal expected
 
-        let subject = [("First", "Tail")]
+        let subject = Map [("First", "Tail")]
         let expected = "Lose"
         let actual = classify subject tree
 
         actual |> should equal expected
 
-        let subject = [("First", "Head"); ("Second", "Tail")]
+        let subject = Map [("First", "Head"); ("Second", "Tail")]
         let expected = "Lose"
         let actual = classify subject tree
 

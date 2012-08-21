@@ -4,9 +4,9 @@ module DecisionTrees =
 
     type Tree = 
         | Conclusion of string 
-        | Choice of string * (string * Tree) []
+        | Choice of string * Map<string, Tree>
 
-    let prop count total = (float)count / (float)total
+    let prob count total = (float)count / (float)total
 
     let inspect dataset =
         let header, (data: 'a [][]) = dataset
@@ -17,10 +17,9 @@ module DecisionTrees =
     let h vector =
         let size = vector |> Array.length
         vector 
-        |> Seq.groupBy (fun e -> e)
-        |> Seq.sumBy (fun e ->
-            let count = e |> snd |> Seq.length
-            let p = prop count size
+        |> Seq.countBy id
+        |> Seq.sumBy (fun (_,count) ->
+            let p = prob count size
             - p * log p)
 
     let entropy dataset =
@@ -52,7 +51,7 @@ module DecisionTrees =
             |> Seq.map (fun row -> row.[cols - 1]) 
             |> Seq.toArray)
         |> Seq.sumBy (fun subset -> 
-            let p = prop (Array.length subset) rows
+            let p = prob (Array.length subset) rows
             p * h subset)
 
     let selectSplit dataset =
@@ -85,17 +84,23 @@ module DecisionTrees =
                 groups 
                 |> Seq.map (fun (label, data) -> (label, build (header, data)))
                 |> Seq.toArray
-            Choice(name, trees)
+            Choice(name, Map trees)
 
     let rec classify subject tree =
         match tree with
-        | Conclusion(c) -> c
-        | Choice(label, options) ->
-            let subjectState =
-                subject
-                |> Seq.find(fun (key, value) -> key = label)
-                |> snd
-            options
-            |> Array.find (fun (option, tree) -> option = subjectState)
-            |> snd
-            |> classify subject
+            | Conclusion(c) -> c
+            | Choice(label, options) ->
+                let subjectState = Map.find label subject
+                options 
+                |> Map.find subjectState
+                |> classify subject
+
+    let rec tryClassify subject tree =
+        match tree with
+            | Conclusion(c) -> Some(c)
+            | Choice(label, options) ->
+                Map.tryFind label subject
+                |> Option.bind(fun subjectState ->
+                    options 
+                    |> Map.tryFind subjectState
+                    |> Option.bind(tryClassify subject))

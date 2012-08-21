@@ -12,7 +12,7 @@ let manualTree =
                  ("Yes", Conclusion "Schwarzenegger")])
 
 // Use the tree to Classify a test Subject
-let test = [| ("Action", "Yes"); ("Sci-Fi", "Yes") |]
+let test = Map [ ("Action", "Yes"); ("Sci-Fi", "Yes") ]
 let actor = classify test manualTree
 
 // Sample dataset
@@ -34,42 +34,34 @@ let answer = classify subject tree
 // The following code assumes the dataset has been massaged a bit,
 // and that data has been transformed to be comma-separated instead of tab.
 
-//open System.IO
-//let lenses = 
-//    let file = the path to the file goes here
-//    let fileAsLines =
-//        File.ReadAllLines(file)
-//        |> Array.map (fun line -> line.Split(','))
-//    let dataset = 
-//        fileAsLines
-//        |> Array.map (fun line -> 
-//            [| line.[0]
-//               line.[1]; 
-//               line.[2]; 
-//               line.[3];
-//               line.[4]|])
-//    let labels = [| "Age"; "Presc."; "Astigm"; "Tears"; "Decision" |]
-//    labels, dataset
+open System.Net
+open System.Text.RegularExpressions
 
+let dowloadDataSet (url : string) separator =
+    let client = new WebClient()
+    client.DownloadString(url).Split('\n') 
+    |> Array.filter((<>) "")
+    |> Array.map (fun line -> Regex.Split(line, separator))
+
+let lenses = 
+    let dataset = 
+        dowloadDataSet "http://archive.ics.uci.edu/ml/machine-learning-databases/lenses/lenses.data" "\\s+"
+        |> Array.map (fun line -> 
+            [| line.[1]
+               line.[2]; 
+               line.[3]; 
+               line.[4];
+               line.[5]|])
+    let labels = [| "Age"; "Presc."; "Astigm"; "Tears"; "Decision" |]
+    labels, dataset
+
+let lensesTree = build lenses
 // Nursery Dataset: http://archive.ics.uci.edu/ml/datasets/Nursery
 
-//open System.IO
-//let nursery =
-//    let file = the path to the file goes here
-//    let fileAsLines =
-//        File.ReadAllLines(file)
-//        |> Array.map (fun line -> line.Split(','))
-//    let labels = [| "parents"; "has_nurs"; "form"; "children"; "housing"; "finance"; "social"; "health"; "Decision" |]
-//    let dataset = 
-//        fileAsLines
-//        |> Array.map (fun line -> 
-//            [| line.[0]
-//               line.[1]; 
-//               line.[2]; 
-//               line.[3];
-//               line.[4]
-//               line.[5]
-//               line.[6]
-//               line.[7]
-//               line.[8] |])
-//    labels, dataset
+let nursery =
+    let labels = [| "parents"; "has_nurs"; "form"; "children"; "housing"; "finance"; "social"; "health"; "Decision" |]
+    let dataset = 
+        dowloadDataSet "http://archive.ics.uci.edu/ml/machine-learning-databases/nursery/nursery.data" ","
+    labels, dataset
+
+let nurseryTree = build nursery

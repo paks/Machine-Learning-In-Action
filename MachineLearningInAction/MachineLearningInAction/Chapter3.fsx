@@ -3,14 +3,13 @@ open MachineLearning.DecisionTrees
 
 // Construct a Decision Tree by hand
 let manualTree = 
-    Choice
-        ("Sci-Fi",
-         [|("No",
-            Choice
-              ("Action",
-               [|("Yes", Conclusion "Stallone");
-                 ("No", Conclusion "Schwarzenegger")|]));
-           ("Yes", Conclusion "Schwarzenegger")|])
+    Choice 
+        ("Sci-Fi", 
+            Map [("No", 
+                    Choice ("Action", 
+                        Map [("Yes", Conclusion "Stallone");
+                             ("No", Conclusion "Schwarzenegger")]));
+                 ("Yes", Conclusion "Schwarzenegger")])
 
 // Use the tree to Classify a test Subject
 let test = [| ("Action", "Yes"); ("Sci-Fi", "Yes") |]
@@ -28,7 +27,7 @@ let movies =
 // Construct the Decision Tree off the data
 // and classify another test subject
 let tree = build movies
-let subject = [| ("Action", "Yes"); ("Sci-Fi", "No") |]
+let subject = Map [ ("Action", "Yes"); ("Sci-Fi", "No") ]
 let answer = classify subject tree
 
 // Lenses dataset: http://archive.ics.uci.edu/ml/datasets/Lenses

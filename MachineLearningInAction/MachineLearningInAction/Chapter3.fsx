@@ -66,7 +66,7 @@ let nursery =
 
 let nurseryTree = build nursery
 
-
+//visualization using http://research.microsoft.com/en-us/projects/msagl/
 #I @"C:\Program Files (x86)\Microsoft\Microsoft Automatic Graph Layout\bin"
 #r "Microsoft.Msagl"
 #r "Microsoft.Msagl.Drawing"
@@ -83,13 +83,13 @@ let tree2graph (graph : Microsoft.Msagl.Drawing.Graph) tree =
         | Conclusion(c) -> 
             let edge = graph.AddEdge(parent, c)
             edge.LabelText <- edgeLabel
-            edge.Attr.Color <- Microsoft.Msagl.Drawing.Color.Green 
+            edge.Attr.Color <- Color.Green 
             let node = graph.FindNode(c)
             node.Attr.Shape <- Shape.Circle
             node.Attr.FillColor <- Color.Green
         | Choice(label, map) -> 
             let label = label + "-" + edgeLabel
-            graph.AddNode(label).Attr.Shape <- Microsoft.Msagl.Drawing.Shape.Diamond
+            graph.AddNode(label).Attr.Shape <- Shape.Diamond
             if(parent <> "") then
                 graph.AddEdge(parent, label).LabelText <- edgeLabel
             for kvp in map do
@@ -99,20 +99,19 @@ let tree2graph (graph : Microsoft.Msagl.Drawing.Graph) tree =
 let form = new Form() 
 
 //create a viewer object 
-let viewer = new Microsoft.Msagl.GraphViewerGdi.GViewer() 
+let viewer = new GViewer() 
 //create a graph object 
-let graph = new Microsoft.Msagl.Drawing.Graph("graph") 
-graph.Label.Text <- "Lenses"
+let graph = new Graph("graph") 
 //create the graph content 
 tree2graph graph lensesTree
 //tree2graph graph nurseryTree
-graph.Attr.NodeSeparation <- graph.Attr.NodeSeparation * 1. 
+graph.Attr.NodeSeparation <- graph.Attr.NodeSeparation * 4. 
 graph.Attr.LayerSeparation <- graph.Attr.LayerSeparation / 2. 
 //bind the graph to the viewer 
 viewer.Graph <- graph 
 //associate the viewer with the form 
 form.SuspendLayout() 
-viewer.Dock <- System.Windows.Forms.DockStyle.Fill 
+viewer.Dock <- DockStyle.Fill 
 form.Controls.Add(viewer) 
 form.ResumeLayout() 
 //show the form 

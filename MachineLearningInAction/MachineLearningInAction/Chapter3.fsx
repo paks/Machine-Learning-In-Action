@@ -44,14 +44,15 @@ let dowloadDataSet (url : string) separator =
     |> Array.map (fun line -> Regex.Split(line, separator))
 
 let lenses = 
+    let actionMap = Map [("1","hard contact lenses");("2","soft contact lenses");("3","no contact lenses");]
     let dataset = 
         dowloadDataSet "http://archive.ics.uci.edu/ml/machine-learning-databases/lenses/lenses.data" "\\s+"
         |> Array.map (fun line -> 
-            [| line.[1]
+            [| line.[1];
                line.[2]; 
                line.[3]; 
                line.[4];
-               line.[5]|])
+               Map.find line.[5] actionMap|])
     let labels = [| "Age"; "Prescription Type"; "Astigmatic"; "Tears Production Rate"; "Decision" |]
     labels, dataset
 
@@ -83,36 +84,38 @@ let tree2graph (graph : Microsoft.Msagl.Drawing.Graph) tree =
         | Conclusion(c) -> 
             let edge = graph.AddEdge(parent, c)
             edge.LabelText <- edgeLabel
-            edge.Attr.Color <- Color.Green 
+            edge.Attr.Color <- Color.Red 
             let node = graph.FindNode(c)
-            node.Attr.Shape <- Shape.Circle
+            node.Attr.Shape <- Shape.Box
             node.Attr.FillColor <- Color.Green
         | Choice(label, map) -> 
-            let label = label + "-" + edgeLabel
+            let label = label + " " + edgeLabel
             graph.AddNode(label).Attr.Shape <- Shape.Box
+            graph.AddNode(label).Attr.FillColor <- Color.LightGray
             if(parent <> "") then
                 graph.AddEdge(parent, label).LabelText <- edgeLabel
             for kvp in map do
                 loop label kvp.Key kvp.Value
     loop "" "" tree
 
-let form = new Form() 
+let form = new Form()
 
 //create a viewer object 
-let viewer = new GViewer() 
+let viewer = new GViewer()
 //create a graph object 
-let graph = new Graph("graph") 
+let graph = new Graph("graph")
 //create the graph content 
 tree2graph graph lensesTree
 //tree2graph graph nurseryTree
-graph.Attr.NodeSeparation <- graph.Attr.NodeSeparation * 4. 
-graph.Attr.LayerSeparation <- graph.Attr.LayerSeparation / 2. 
+graph.Attr.NodeSeparation <- graph.Attr.NodeSeparation * 4.
+graph.Attr.LayerSeparation <- graph.Attr.LayerSeparation / 2.
+graph.Attr.BackgroundColor <- Color.LightCyan
 //bind the graph to the viewer 
-viewer.Graph <- graph 
+viewer.Graph <- graph
 //associate the viewer with the form 
-form.SuspendLayout() 
-viewer.Dock <- DockStyle.Fill 
-form.Controls.Add(viewer) 
-form.ResumeLayout() 
+form.SuspendLayout()
+viewer.Dock <- DockStyle.Fill
+form.Controls.Add(viewer)
+form.ResumeLayout()
 //show the form 
-form.ShowDialog() 
+form.ShowDialog()

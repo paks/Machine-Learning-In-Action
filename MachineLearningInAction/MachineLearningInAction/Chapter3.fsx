@@ -89,7 +89,7 @@ let tree2graph (graph : Microsoft.Msagl.Drawing.Graph) tree =
             node.Attr.FillColor <- Color.Green
         | Choice(label, map) -> 
             let label = label + "-" + edgeLabel
-            graph.AddNode(label).Attr.Shape <- Shape.Diamond
+            graph.AddNode(label).Attr.Shape <- Shape.Box
             if(parent <> "") then
                 graph.AddEdge(parent, label).LabelText <- edgeLabel
             for kvp in map do
